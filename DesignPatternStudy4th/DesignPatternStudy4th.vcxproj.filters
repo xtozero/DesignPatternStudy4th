@@ -16,6 +16,15 @@
     <Filter Include="Interpreter">
       <UniqueIdentifier>{2377523b-d0b4-4aa7-8fac-f77c756db829}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ChainOfResponsibility">
+      <UniqueIdentifier>{5ddb419b-7980-43b8-bbed-492434932dd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Iterator">
+      <UniqueIdentifier>{36e6d6ba-3248-43d4-b578-29459a2efa99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Command">
+      <UniqueIdentifier>{81bff44d-8bc9-4154-9249-81ef708db988}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Expression.h">

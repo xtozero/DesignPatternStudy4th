@@ -32,3 +32,9 @@
 *.opendb
 *.db
 .vs
+DesignPatternStudy4th/x64/
+x64/
+DesignPatternStudy4th/Debug/
+Debug/
+DesignPatternStudy4th/Release/
+Release/

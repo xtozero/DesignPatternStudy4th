@@ -8,19 +8,41 @@
 
 TEST_CASE( "Expression" )
 {
-	Context dummyContext("1+2+3");
+	Context<int> dummyContext;
 
 	SECTION( "Operand Expression" )
 	{
 		float floatingInput = 3.14f;
 		CNumberExpr<float> floatingType( floatingInput );
+		Context<float> floatContext;
 
-		REQUIRE( floatingType.Interpret( dummyContext ) == floatingInput );
+		REQUIRE( floatingType.Interpret( floatContext ) == floatingInput );
 
 		int integerInput = 20160911;
 		CNumberExpr<int> integerType( integerInput );
 
 		REQUIRE( integerType.Interpret( dummyContext ) == integerInput );
+	}
+
+	SECTION( "Value Expression" )
+	{
+		Context<float> floatCtx;
+		REQUIRE( floatCtx.GetVariable( "" ) == 0.f );
+
+		floatCtx.AddVariable( "$critical", 201.60911f );
+		REQUIRE( floatCtx.GetVariable( "$critical" ) == 201.60911f );
+
+		Context<int> integerCtx;
+		REQUIRE( integerCtx.GetVariable( "" ) == 0 );
+
+		integerCtx.AddVariable( "$attack", 2016 );
+		REQUIRE( integerCtx.GetVariable( "$attack" ) == 2016 );
+
+		CVariableExpr<float> criticalExp( "$critical" );
+		REQUIRE( criticalExp.Interpret( floatCtx ) == 201.60911f );
+
+		CVariableExpr<int> attackExp( "$attack" );
+		REQUIRE( attackExp.Interpret( integerCtx ) == 2016 );
 	}
 
 	int lhsInput = 20160911;
