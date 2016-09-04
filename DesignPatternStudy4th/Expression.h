@@ -2,6 +2,7 @@
 
 #include "Context.h"
 
+#include <cassert>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -57,14 +58,15 @@ class CPlusExpr : public IExpression<T>
 public:
 	virtual T Interpret( const Context<T>& context ) const override
 	{ 
-		return m_lhs.Interpret( context ) + m_rhs.Interpret( context );
+		assert( m_lhs != nullptr && m_rhs != nullptr );
+		return m_lhs->Interpret( context ) + m_rhs->Interpret( context );
 	}
 	
-	CPlusExpr( IExpression<T>& lhs, IExpression<T>& rhs ) noexcept : m_lhs( lhs ), m_rhs( rhs ) {}
+	CPlusExpr( IExpression<T>* lhs, IExpression<T>* rhs ) noexcept : m_lhs( lhs ), m_rhs( rhs ) {}
 
 private:
-	IExpression<T>& m_lhs;
-	IExpression<T>& m_rhs;
+	IExpression<T>* m_lhs;
+	IExpression<T>* m_rhs;
 };
 
 template <typename T>
@@ -73,14 +75,15 @@ class CMinusExpr : public IExpression<T>
 public:
 	virtual T Interpret( const Context<T>& context ) const override
 	{
-		return m_lhs.Interpret( context ) - m_rhs.Interpret( context );
+		assert( m_lhs != nullptr && m_rhs != nullptr );
+		return m_lhs->Interpret( context ) - m_rhs->Interpret( context );
 	}
 
-	CMinusExpr( IExpression<T>& lhs, IExpression<T>& rhs ) noexcept : m_lhs( lhs ), m_rhs( rhs ) {}
+	CMinusExpr( IExpression<T>* lhs, IExpression<T>* rhs ) noexcept : m_lhs( lhs ), m_rhs( rhs ) {}
 
 private:
-	IExpression<T>& m_lhs;
-	IExpression<T>& m_rhs;
+	IExpression<T>* m_lhs;
+	IExpression<T>* m_rhs;
 };
 
 template <typename T>
@@ -89,14 +92,15 @@ class CMultiplyExpr : public IExpression<T>
 public:
 	virtual T Interpret( const Context<T>& context ) const override
 	{
-		return m_lhs.Interpret( context ) * m_rhs.Interpret( context );
+		assert( m_lhs != nullptr && m_rhs != nullptr );
+		return m_lhs->Interpret( context ) * m_rhs->Interpret( context );
 	}
 
-	CMultiplyExpr( IExpression<T>& lhs, IExpression<T>& rhs ) noexcept : m_lhs( lhs ), m_rhs( rhs ) {}
+	CMultiplyExpr( IExpression<T>* lhs, IExpression<T>* rhs ) noexcept : m_lhs( lhs ), m_rhs( rhs ) {}
 
 private:
-	IExpression<T>& m_lhs;
-	IExpression<T>& m_rhs;
+	IExpression<T>* m_lhs;
+	IExpression<T>* m_rhs;
 };
 
 template <typename T>
@@ -105,12 +109,13 @@ class CDivideExpr : public IExpression<T>
 public:
 	virtual T Interpret( const Context<T>& context ) const override
 	{
-		return m_lhs.Interpret( context ) / m_rhs.Interpret( context );
+		assert( m_lhs != nullptr && m_rhs != nullptr );
+		return m_lhs->Interpret( context ) / m_rhs->Interpret( context );
 	}
 
-	CDivideExpr( IExpression<T>& lhs, IExpression<T>& rhs ) noexcept : m_lhs( lhs ), m_rhs( rhs ) {}
+	CDivideExpr( IExpression<T>* lhs, IExpression<T>* rhs ) noexcept : m_lhs( lhs ), m_rhs( rhs ) {}
 
 private:
-	IExpression<T>& m_lhs;
-	IExpression<T>& m_rhs;
+	IExpression<T>* m_lhs;
+	IExpression<T>* m_rhs;
 };

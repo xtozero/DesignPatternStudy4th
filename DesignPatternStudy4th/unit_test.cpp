@@ -1,13 +1,22 @@
 #define CATCH_CONFIG_MAIN
 
 #include "Expression.h"
+#include "Evaluator.h"
+#include "Handler.h"
 #include "Lib\catch.hpp"
 
+#include <crtdbg.h>
 #include <iostream>
 #include <type_traits>
 
+#ifdef _DEBUG
+#define new new( _CLIENT_BLOCK, __FILE__, __LINE__ )
+#endif
+
 TEST_CASE( "Expression" )
 {
+	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+
 	Context<int> dummyContext;
 
 	SECTION( "Operand Expression" )
@@ -52,37 +61,96 @@ TEST_CASE( "Expression" )
 
 	SECTION( "Plus Expression" )
 	{
-		CPlusExpr<int> plus( lhs, rhs );
+		CPlusExpr<int> plus( &lhs, &rhs );
 		REQUIRE( plus.Interpret( dummyContext ) == lhsInput + rhsInput );
 
-		CPlusExpr<int> rPlus( rhs, lhs );
+		CPlusExpr<int> rPlus( &rhs, &lhs );
 		REQUIRE( rPlus.Interpret( dummyContext ) == rhsInput + lhsInput );
 	}
 
 	SECTION( "Minus Expression" )
 	{
-		CMinusExpr<int> minus( lhs, rhs );
+		CMinusExpr<int> minus( &lhs, &rhs );
 		REQUIRE( minus.Interpret( dummyContext ) == lhsInput - rhsInput );
 
-		CMinusExpr<int> rMinus( rhs, lhs );
+		CMinusExpr<int> rMinus( &rhs, &lhs );
 		REQUIRE( rMinus.Interpret( dummyContext ) == rhsInput - lhsInput );
 	}
 
 	SECTION( "Multiply Expression" )
 	{
-		CMultiplyExpr<int> mul( lhs, rhs );
+		CMultiplyExpr<int> mul( &lhs, &rhs );
 		REQUIRE( mul.Interpret( dummyContext ) == lhsInput * rhsInput );
 
-		CMultiplyExpr<int> rMul( rhs, lhs );
+		CMultiplyExpr<int> rMul( &rhs, &lhs );
 		REQUIRE( mul.Interpret( dummyContext ) == rhsInput * lhsInput );
 	}
 
 	SECTION( "Divide Expression" )
 	{
-		CDivideExpr<int> div( lhs, rhs );
+		CDivideExpr<int> div( &lhs, &rhs );
 		REQUIRE( div.Interpret( dummyContext ) == lhsInput / rhsInput );
 
-		CDivideExpr<int> rDiv( rhs, lhs );
+		CDivideExpr<int> rDiv( &rhs, &lhs );
 		REQUIRE( rDiv.Interpret( dummyContext ) == rhsInput / lhsInput );
 	}
+}
+
+TEST_CASE( "Handler" )
+{
+	CNumberHandler<float> numberHandler;
+	CVariableHandler<float> variableHandler;
+	COperatorHandler<float> operatorHandler;
+
+	SECTION( "Number Handler" )
+	{
+		ExpressionStack<float> exprStack;
+
+		REQUIRE( numberHandler.HandleRequest( "201.60911", exprStack ) );
+		REQUIRE( exprStack.size( ) == 1 );
+
+		REQUIRE_FALSE( numberHandler.HandleRequest( "something", exprStack ) );
+		REQUIRE( exprStack.size( ) == 1 );
+
+		REQUIRE( numberHandler.HandleRequest( "119.06102", exprStack ) );
+		REQUIRE( exprStack.size( ) == 2 );
+	}
+
+	SECTION( "Variable Handler" )
+	{
+		ExpressionStack<float> exprStack;
+
+		REQUIRE( variableHandler.HandleRequest( "$attack", exprStack ) );
+		REQUIRE( exprStack.size( ) == 1 );
+
+		REQUIRE_FALSE( variableHandler.HandleRequest( "something", exprStack ) );
+		REQUIRE( exprStack.size( ) == 1 );
+
+		REQUIRE( variableHandler.HandleRequest( "$critical", exprStack ) );
+		REQUIRE( exprStack.size( ) == 2 );
+	}
+
+	SECTION( "Operator Handler" )
+	{
+		ExpressionStack<float> exprStack;
+
+		REQUIRE( numberHandler.HandleRequest( "201.60911", exprStack ) );
+		REQUIRE( numberHandler.HandleRequest( "119.06102", exprStack ) );
+		REQUIRE( operatorHandler.HandleRequest( "+", exprStack ) );
+		REQUIRE( exprStack.size( ) == 1 );
+	}
+}
+
+TEST_CASE( "Evaluator" )
+{
+	CEvaluator<float> evaluator;
+	
+	REQUIRE( evaluator.Evaluate( "(150+60/2)*2+(78-20+60)+1", Context<float>( ) ) == (150.f + 60.f / 2.f) * 2.f + (78.f - 20.f + 60.f) + 1.f );
+
+	Context<float> floatCtx;
+	floatCtx.AddVariable( "$critical", 201.60911f );
+	floatCtx.AddVariable( "$baseDamage", 50.f );
+	
+	REQUIRE( evaluator.Evaluate( "$critical+60/2)*2+(78-20+60)+1", floatCtx ) == (201.60911f + 60.f / 2.f) * 2.f + (78.f - 20.f + 60.f) + 1.f );
+	REQUIRE( evaluator.Evaluate( "$critical*$baseDamage", floatCtx ) == 50.f * 201.60911f );
 }
