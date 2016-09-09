@@ -1,12 +1,16 @@
 #define CATCH_CONFIG_MAIN
 
+#include "Aggregate.h"
+#include "Command.h"
 #include "Expression.h"
 #include "Evaluator.h"
 #include "Handler.h"
 #include "Lib\catch.hpp"
+#include "LogStorage.h"
 
 #include <crtdbg.h>
 #include <iostream>
+#include <list>
 #include <type_traits>
 
 #ifdef _DEBUG
@@ -145,12 +149,55 @@ TEST_CASE( "Evaluator" )
 {
 	CEvaluator<float> evaluator;
 	
-	REQUIRE( evaluator.Evaluate( "(150+60/2)*2+(78-20+60)+1", Context<float>( ) ) == (150.f + 60.f / 2.f) * 2.f + (78.f - 20.f + 60.f) + 1.f );
+	REQUIRE( evaluator.Evaluate( "( 150 + 60 / 2 ) * 2 + ( 78 - 20 + 60 ) + 1", Context<float>( ) ) == (150.f + 60.f / 2.f) * 2.f + (78.f - 20.f + 60.f) + 1.f );
 
 	Context<float> floatCtx;
 	floatCtx.AddVariable( "$critical", 201.60911f );
 	floatCtx.AddVariable( "$baseDamage", 50.f );
 	
-	REQUIRE( evaluator.Evaluate( "$critical+60/2)*2+(78-20+60)+1", floatCtx ) == (201.60911f + 60.f / 2.f) * 2.f + (78.f - 20.f + 60.f) + 1.f );
-	REQUIRE( evaluator.Evaluate( "$critical*$baseDamage", floatCtx ) == 50.f * 201.60911f );
+	REQUIRE( evaluator.Evaluate( "( $critical + 60 / 2 ) * 2 + ( 78 - 20 + 60 ) + 1", floatCtx ) == (201.60911f + 60.f / 2.f) * 2.f + (78.f - 20.f + 60.f) + 1.f );
+	REQUIRE( evaluator.Evaluate( "$critical * $baseDamage", floatCtx ) == 50.f * 201.60911f );
+}
+
+TEST_CASE( "Command" )
+{
+	LogDamageResult<float> log( "$critical * $baseDamage", 2000 );
+	log.Execute( );
+}
+
+TEST_CASE( "LogStorage" )
+{
+	CLogStorage& invoker = CLogStorage::GetInstance( );
+
+	invoker.AddLog( std::make_unique<LogDamageResult<float>>( "$critical * $baseDamage", 100.f ) );
+	invoker.AddLog( std::make_unique<LogDamageResult<float>>( "$critical * $baseDamage", 200.f ) );
+
+	invoker.RemoveAllLog( );
+	invoker.Print( );
+
+	invoker.AddLog( std::make_unique<LogDamageResult<float>>( "$critical * $baseDamage", 300.f ) );
+	invoker.AddLog( std::make_unique<LogDamageResult<float>>( "$critical * $baseDamage", 400.f ) );
+
+	invoker.Print( );
+}
+
+TEST_CASE( "Custom Linked List" )
+{
+	LinkedList<float> list;
+	list.push_back( 1 );
+
+	REQUIRE( list.size( ) == 1 );
+	REQUIRE( *list.begin( ) == 1 );
+
+	list.push_back( 2 );
+	list.push_back( 3 );
+
+	REQUIRE( list.size( ) == 3 );
+
+	float i = 1;
+	for ( auto value : list )
+	{
+		REQUIRE( value == i );
+		++i;
+	}
 }

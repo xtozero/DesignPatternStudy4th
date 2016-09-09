@@ -14,6 +14,14 @@ public:
 	virtual T Interpret( const Context<T>& context ) const = 0;
 	
 	virtual ~IExpression() = default;
+
+	IExpression( const IExpression& ) = default;
+	IExpression& operator=( const IExpression& ) = default;
+	IExpression( IExpression&& ) = default;
+	IExpression& operator=( IExpression&& ) = default;
+
+protected:
+	IExpression( ) = default;
 };
 
 /*

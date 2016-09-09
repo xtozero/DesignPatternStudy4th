@@ -2,6 +2,7 @@
 
 #include "Expression.h"
 
+#include <memory>
 #include <stack>
 #include <string>
 #include <vector>
@@ -28,14 +29,13 @@ public:
 			return true;
 		}
 
+		if ( m_helpHandler )
+		{
+			return m_helpHandler->HandleRequest( pattern, exprs );
+		}
+
 		return false;
 	}
-
-	IHandler( ) = default;
-	IHandler( const IHandler& ) = default;
-	IHandler& operator=( const IHandler& ) = default;
-	IHandler( IHandler&& ) = default;
-	IHandler& operator=( IHandler&& ) = default;
 
 	virtual ~IHandler( )
 	{
@@ -46,7 +46,19 @@ public:
 	}
 
 protected:
-	std::vector<OwnerPtr<IExpression<T>>> m_ownExpr;
+	IHandler( std::unique_ptr<IHandler>&& handler = nullptr ) : m_helpHandler( std::move( handler ) )
+	{
+
+	}
+
+	IHandler( const IHandler& ) = delete;
+	IHandler& operator=( const IHandler& ) = delete;
+	IHandler( IHandler&& ) = delete;
+	IHandler& operator=( IHandler&& ) = delete;
+
+	LinkedList<OwnerPtr<IExpression<T>>> m_ownExpr;
+
+	std::unique_ptr<IHandler> m_helpHandler;
 };
 
 template <typename T>
@@ -62,6 +74,10 @@ public:
 		}
 
 		return nullptr;
+	}
+
+	CNumberHandler( std::unique_ptr<IHandler>&& handler = nullptr ) : IHandler<T>( std::move( handler ) )
+	{
 	}
 
 private:
@@ -91,6 +107,10 @@ public:
 		}
 
 		return nullptr;
+	}
+
+	CVariableHandler( std::unique_ptr<IHandler>&& handler = nullptr ) : IHandler<T>( std::move( handler ) )
+	{
 	}
 
 private:
@@ -144,5 +164,9 @@ public:
 		}
 		
 		return expr;
+	}
+
+	COperatorHandler( std::unique_ptr<IHandler>&& handler = nullptr ) : IHandler<T>( std::move( handler ) )
+	{
 	}
 };

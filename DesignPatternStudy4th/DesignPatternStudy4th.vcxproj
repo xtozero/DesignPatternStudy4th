@@ -149,10 +149,15 @@
     <ClCompile Include="unit_test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Aggregate.h" />
     <ClInclude Include="Context.h" />
+    <ClInclude Include="LogStorage.h" />
     <ClInclude Include="Evaluator.h" />
     <ClInclude Include="Expression.h" />
     <ClInclude Include="Handler.h" />
+    <ClInclude Include="Command.h" />
+    <ClInclude Include="Iterator.h" />
+    <ClInclude Include="Receiver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -39,6 +39,21 @@
     <ClInclude Include="Evaluator.h">
       <Filter>ChainOfResponsibility</Filter>
     </ClInclude>
+    <ClInclude Include="Command.h">
+      <Filter>Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Iterator.h">
+      <Filter>Iterator</Filter>
+    </ClInclude>
+    <ClInclude Include="Receiver.h">
+      <Filter>Command</Filter>
+    </ClInclude>
+    <ClInclude Include="LogStorage.h">
+      <Filter>Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Aggregate.h">
+      <Filter>Iterator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="unit_test.cpp">

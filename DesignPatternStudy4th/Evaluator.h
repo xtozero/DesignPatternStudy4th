@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Aggregate.h"
 #include "Context.h"
 #include "Handler.h"
 
@@ -35,25 +36,41 @@ bool IsGreaterEqualPrecedence( char lhs, char rhs )
 	return GetPrecedence( lhs ) <= GetPrecedence( rhs );
 }
 
-template <typename T>
+std::string RemoveSpace( const std::string& source )
+{
+	std::string result;
+	result.reserve( source.size( ) );
+
+	for ( auto c : source )
+	{
+		if ( c != ' ' )
+		{
+			result += c;
+		}
+	}
+
+	return result;
+}
+
+template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
 class CEvaluator
 {
 public:
-	CEvaluator( )
+	CEvaluator( ) : m_exprHandler( nullptr )
 	{
 		RegisterDefaultHandler( );
 	}
 
 	void RegisterDefaultHandler( )
 	{
-		m_exprHandlers.push_back( std::make_unique<CNumberHandler<T>>() );
-		m_exprHandlers.push_back( std::make_unique<CVariableHandler<T>>( ) );
-		m_exprHandlers.push_back( std::make_unique<COperatorHandler<T>>( ) );
+		std::unique_ptr<IHandler<T>> operatorHandler = std::make_unique<COperatorHandler<T>>( );
+		std::unique_ptr<IHandler<T>> variableHandler = std::make_unique<CVariableHandler<T>>( std::move( operatorHandler ) );
+		m_exprHandler = std::make_unique<CNumberHandler<T>>( std::move( variableHandler ) );
 	}
 
 	T Evaluate( const std::string& infix, const Context<T>& ctx )
 	{
-		return PostfixEvaluate( ConvertInfixToPostfix( infix ), ctx );
+		return PostfixEvaluate( ConvertInfixToPostfix( RemoveSpace( infix ) ), ctx );
 	}
 
 private:
@@ -161,22 +178,20 @@ private:
 
 	T PostfixEvaluate( const std::vector<std::string>& postfix, const Context<T>& ctx )
 	{
+		assert( m_exprHandler && "m_exprHandler is nullptr" );
+
 		bool handled = false;
 		ExpressionStack<T> exprs;
 
 		for ( const auto& pattern : postfix )
 		{
-			handled = false;
-			for ( auto&& handler = m_exprHandlers.begin(); handler != m_exprHandlers.end() && handled == false; ++handler )
-			{
-				handled = handler->get()->HandleRequest( pattern, exprs );
-			}
+			handled = m_exprHandler->HandleRequest( pattern, exprs );
 			assert( handled && "pattern doesn't handled" );
 		}
 
-		assert( exprs.size( ) == 1 );
+		assert( exprs.size( ) == 1 && "result expression stack size is not 1" );
 		return exprs.top( )->Interpret( ctx );
 	}
 
-	std::vector<std::unique_ptr<IHandler<T>>> m_exprHandlers;
+	std::unique_ptr<IHandler<T>> m_exprHandler;
 };
